@@ -1,13 +1,24 @@
-
-const { storageModel } = require("../models");
+const fs = require("fs");
+const {storageModel} = require("../models");
+const {matchedData} = require("express-validator");
+const {handleHttpError} = require("../utils/handleError");
 const URL_PUBLIC = process.env.URL_PUBLIC;
+const MEDIA_PATH = `${__dirname}/../storage`;
 
 /**
  * Obtener el detalle
  * @param {*} req
  * @param {*} res
  */
-const getItem = async (req, res) => {};
+const getItem = async (req, res) => {
+    try {
+        const {id} = matchedData(req)
+        const data = await storageModel.findById(id)
+        res.send({data})
+    } catch (e) {
+        handleHttpError(res, "ERROR_GET_STORAGE");
+    }
+};
 
 /**
  * Obtener una lista
@@ -15,8 +26,12 @@ const getItem = async (req, res) => {};
  * @param {*} res
  */
 const getItems = async (req, res) => {
-   const  data = await storageModel.find({})
-    res.send({data})
+    try {
+        const data = await storageModel.find({})
+        res.send({data})
+    } catch (e) {
+        handleHttpError(res, "ERROR_GET_STORAGE");
+    }
 };
 
 /**
@@ -25,28 +40,42 @@ const getItems = async (req, res) => {
  * @param {*} res
  */
 const createItem = async (req, res) => {
-    const {body, file} = req
-    console.log(file)
-    const fileData={
-        filename:file.filename,
-        url:`${URL_PUBLIC}/${file.filename}`
+    try {
+        const {body, file} = req
+        console.log(file)
+        const fileData = {
+            filename: file.filename,
+            url: `${URL_PUBLIC}/${file.filename}`
+        }
+        const data = await storageModel.create(fileData)
+        res.send({data})
+    } catch (e) {
+        handleHttpError(res, "ERROR_CREATE_STORAGE");
     }
-    const data = await storageModel.create(fileData)
-    res.send({data})
 };
-
-/**
- * actualizar items
- * @param {*} req
- * @param {*} res
- */
-const updateItem = async (req, res) => {};
 
 /**
  * borrar items
  * @param {*} req
  * @param {*} res
  */
-const deleteItem = async (req, res) => {};
+const deleteItem = async (req, res) => {
+    try {
+        const {id} = matchedData(req)
+        const dataFile = await storageModel.findById(id)
+        // await storageModel.deleteOne(id) borrado fisico
+        await storageModel.delete({_id: id}) //borrado logico
+        const {filename} = dataFile
+        const filePath = `${MEDIA_PATH}/${filename}`
+        // fs.unlinkSync(filePath) Borrado fisico
+        const data = {
+            filePath,
+            deleted: 1
+        }
+        res.send({data})
+    } catch (e) {
+        handleHttpError(res, "ERROR_DELETE_STORAGE");
+    }
+};
 
-module.exports = { getItems, getItem, createItem, updateItem, deleteItem };
+module.exports = {getItems, getItem, createItem, deleteItem};

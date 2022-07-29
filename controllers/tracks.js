@@ -1,15 +1,25 @@
 const mongoose = require("mongoose");
-//const { matchedData } = require("express-validator");
-//const { handleHttpError } = require("../utils/handleError");
-const { tracksModel } = require("../models");
-//const optionsPaginate = require("../config/paginationParams");
+const {matchedData} = require("express-validator");
+const {handleHttpError} = require("../utils/handleError");
+const {tracksModel} = require("../models");
+
 
 /**
  * Obtener el detalle
  * @param {*} req
  * @param {*} res
  */
-const getItem = async (req, res) => {};
+const getItem = async (req, res) => {
+    try {
+        req = matchedData(req)
+        const {id} = req
+        const data = await tracksModel.findById(id)
+        res.send({data})
+    } catch (e) {
+        handleHttpError(res, "ERROR_GET_ITEM");
+    }
+
+};
 
 /**
  * Obtener una lista
@@ -17,8 +27,12 @@ const getItem = async (req, res) => {};
  * @param {*} res
  */
 const getItems = async (req, res) => {
-   const  data = await tracksModel.find({})
-    res.send({data})
+    try {
+        const data = await tracksModel.find({})
+        res.send({data})
+    } catch (e) {
+        handleHttpError(res, "ERROR_GET_ITEMS")
+    }
 };
 
 /**
@@ -27,11 +41,13 @@ const getItems = async (req, res) => {
  * @param {*} res
  */
 const createItem = async (req, res) => {
-    const {body} = req
-    console.log(body)
-    const data = await tracksModel.create(body)
-    res.send({data})
-
+    try {
+        const body = matchedData(req) //clear more data info
+        const data = await tracksModel.create(body)
+        res.send({data})
+    } catch (e) {
+        handleHttpError(res, "ERROR_POST_ITEMS")
+    }
 };
 
 /**
@@ -40,6 +56,15 @@ const createItem = async (req, res) => {
  * @param {*} res
  */
 const updateItem = async (req, res) => {
+    try {
+        const {id, ...body} = matchedData(req) //clear more data info
+        const data = await tracksModel.findOneAndUpdate(
+            id, body
+        )
+        res.send({data})
+    } catch (e) {
+        handleHttpError(res, "ERROR_UPDATE_ITEMS")
+    }
 };
 
 /**
@@ -48,19 +73,17 @@ const updateItem = async (req, res) => {
  * @param {*} res
  */
 const deleteItem = async (req, res) => {
-    try {
-        req = matchedData(req);
-        const id = req.id;
-        const findData = await tracksModel.delete({ _id: id });
-        const data = {
-            findData: findData,
-            deleted: true,
-        };
 
-        res.send({ data });
+    try {
+        req = matchedData(req)
+        const {id} = req
+        // const data = await tracksModel.deleteOne({_id:id}) borrado fisico
+        const data = await tracksModel.delete({_id:id}) // borrado logico
+        res.send({data})
     } catch (e) {
-        handleHttpError(res, e);
+        handleHttpError(res, "ERROR_DELETE_ITEM");
     }
+
 };
 
-module.exports = { getItems, getItem, createItem, updateItem, deleteItem };
+module.exports = {getItems, getItem, createItem, updateItem, deleteItem};
