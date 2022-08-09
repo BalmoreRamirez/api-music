@@ -9,15 +9,11 @@ const removeExtension = (fileName) => {
 }
 
 fs.readdirSync(PATH_ROUTES).filter((file) => {
-
     const fileWithOutExt = removeExtension(file)
-
-    // excluir el archivo index
+    // include file index
     const skip = ['index'].includes(fileWithOutExt)
-
     if (!skip) {
         router.use(`/${fileWithOutExt}`, require(`./${fileWithOutExt}`)) //TODO: localhost/users
-
         console.log('CARGAR RUTA ---->', fileWithOutExt)
     }
 })
