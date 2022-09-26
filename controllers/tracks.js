@@ -1,7 +1,7 @@
 const mongoose = require("mongoose");
-const {matchedData} = require("express-validator");
-const {handleHttpError} = require("../utils/handleError");
-const {tracksModel} = require("../models");
+const { matchedData } = require("express-validator");
+const { handleHttpError } = require("../utils/handleError");
+const { tracksModel } = require("../models");
 
 
 /**
@@ -12,13 +12,12 @@ const {tracksModel} = require("../models");
 const getItem = async (req, res) => {
     try {
         req = matchedData(req)
-        const {id} = req
-        const data = await tracksModel.findById(id)
-        res.send({data})
+        const { id } = req
+        const data = await tracksModel.findOneData(id)
+        res.send({ data })
     } catch (e) {
         handleHttpError(res, "ERROR_GET_ITEM");
     }
-
 };
 
 /**
@@ -29,8 +28,8 @@ const getItem = async (req, res) => {
 const getItems = async (req, res) => {
     try {
         const user = req.user
-        const data = await tracksModel.find({})
-        res.send({data, user})
+        const data = await tracksModel.findAllData({})
+        res.send({ data, user })
     } catch (e) {
         handleHttpError(res, "ERROR_GET_ITEMS")
     }
@@ -45,7 +44,7 @@ const createItem = async (req, res) => {
     try {
         const body = matchedData(req) //clear more data info
         const data = await tracksModel.create(body)
-        res.send({data})
+        res.send({ data })
     } catch (e) {
         handleHttpError(res, "ERROR_POST_ITEMS")
     }
@@ -58,11 +57,11 @@ const createItem = async (req, res) => {
  */
 const updateItem = async (req, res) => {
     try {
-        const {id, ...body} = matchedData(req) //clear more data info
+        const { id, ...body } = matchedData(req) //clear more data info
         const data = await tracksModel.findOneAndUpdate(
             id, body
         )
-        res.send({data})
+        res.send({ data })
     } catch (e) {
         handleHttpError(res, "ERROR_UPDATE_ITEMS")
     }
@@ -77,14 +76,14 @@ const deleteItem = async (req, res) => {
 
     try {
         req = matchedData(req)
-        const {id} = req
+        const { id } = req
         // const data = await tracksModel.deleteOne({_id:id}) borrado fisico
-        const data = await tracksModel.delete({_id:id}) // borrado logico
-        res.send({data})
+        const data = await tracksModel.delete({ _id: id }) // borrado logico
+        res.send({ data })
     } catch (e) {
         handleHttpError(res, "ERROR_DELETE_ITEM");
     }
 
 };
 
-module.exports = {getItems, getItem, createItem, updateItem, deleteItem};
+module.exports = { getItems, getItem, createItem, updateItem, deleteItem };
